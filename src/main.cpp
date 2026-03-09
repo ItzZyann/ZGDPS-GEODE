@@ -1,43 +1,41 @@
 #include <Geode/Geode.hpp>
 
-#include <Geode/modify/LoadingLayer.hpp>
-#include <Geode/modify/MenuLayer.hpp>
+// default modifiers
+// i dont wanna create new files
+// for these things
+#include <Geode/modify/GManager.hpp>
 #include <Geode/modify/GameManager.hpp>
 #include <Geode/modify/GameStatsManager.hpp>
 
-using namespace geode::prelude;
+// for save file
+// idk why this called GManager
+// why not just cram it on GameManager?
+class $modify(GManager) {
+	void setup() {
+		auto compare = std::string(m_fileName);
+		compare.insert(std::string_view(compare).find(".dat"), "ZyannGDPS");
+		m_fileName = compare;
 
-// LOADING LAYER
-class $modify(LoadingLayerH, LoadingLayer) {
-public:
-    $override const char* getLoadingString() {
-        const char* ret =
-            "Mod developed by ItzZyann\n"
-            "All rights reserved :D";
+		GManager::setup();
+	}
+};
 
-        return ret; 
-    }
+// handle for unlock all
+// icons and colors
+class $modify(GameManager) {
+    bool isIconUnlocked(int pID, IconType pType) { return true; }
+    bool isColorUnlocked(int pID, UnlockType pType) { return true; }
+};
 
-    $override bool init(bool pLoadDef) {
-        if(!LoadingLayer::init(pLoadDef))
-        return false;
+// handle for unlocking
+// custom music and practice
+// music sync
+class $modify(GameStatsManager) {
+    bool isItemUnlocked(UnlockType pType, int pID) {
+        if(pType == UnlockType::GJItem && pID == 16 || pID == 17) {
+            return true;
+        }
 
-        auto logo = (CCSprite*)(this->getChildren()->objectAtIndex(1));
-        logo->setPositionY( logo->getPositionY() + 10);
-
-        auto zyann = CCLabelBMFont::create(
-            "ItzZyann Server",
-            "goldFont.fnt"
-        );
-
-        zyann->setScale(.9);
-        zyann->setPosition(
-            logo->getPositionX() + 120,
-            logo->getPositionY() - 40
-        );
-
-        addChild(zyann, 100);
-
-        return true;
+        return GameStatsManager::isItemUnlocked(pType, pID);
     }
 };
